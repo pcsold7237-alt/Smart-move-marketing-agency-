@@ -94,6 +94,19 @@ export default function App() {
     }
   }, []);
 
+  // IMPORTANT: these must be declared unconditionally, at the top level of the component.
+  // openAdmin/closeAdmin were previously created with an inline useCallback(...) directly
+  // inside `{isAdminOpen && (...)}` JSX below. That conditionally skips the hook call when
+  // isAdminOpen is false, so React sees a different number of hooks between renders and
+  // throws "Rendered fewer hooks than expected" (minified error #310) the moment isAdminOpen
+  // flips to true — which crashed the whole app (no error boundary existed to catch it).
+  const openAdmin = useCallback(() => setIsAdminOpen(true), []);
+  const closeAdmin = useCallback(() => setIsAdminOpen(false), []);
+  const openVideoModal = useCallback((url: string) => setActiveVideoUrl(url), []);
+  const closeVideoModal = useCallback(() => setActiveVideoUrl(null), []);
+  const noop = useCallback(() => {}, []);
+  const onSelectServiceForAudit = useCallback((serviceTitle: string) => scrollToContact(`Service: ${serviceTitle}`), [scrollToContact]);
+
   return (
     <div className="min-h-screen bg-[#0B0F17] text-gray-100 selection:bg-cyan-400 selection:text-black">
       {/* Global Utilities */}
@@ -104,7 +117,7 @@ export default function App() {
       {/* Floating Header Navbar */}
       <Navbar
         settings={settings}
-        onOpenAdmin={useCallback(() => setIsAdminOpen(true), [])}
+        onOpenAdmin={openAdmin}
         isAdminLoggedIn={isAdminLoggedIn}
         onOpenAudit={scrollToContact}
       />
@@ -115,14 +128,14 @@ export default function App() {
         <Hero
           settings={settings}
           onOpenAudit={scrollToContact}
-          onOpenVideoModal={useCallback((url: string) => setActiveVideoUrl(url), [])}
+          onOpenVideoModal={openVideoModal}
         />
 
         {/* 3. Services */}
         <Suspense fallback={<div className="h-32" />}>
           <Services
             services={services}
-            onSelectServiceForAudit={useCallback((serviceTitle: string) => scrollToContact(`Service: ${serviceTitle}`), [scrollToContact])}
+            onSelectServiceForAudit={onSelectServiceForAudit}
             heading={settings.servicesHeading}
           />
         </Suspense>
@@ -131,7 +144,7 @@ export default function App() {
         <Suspense fallback={<div className="h-32" />}>
           <Portfolio
             caseStudies={caseStudies}
-            onOpenVideoModal={useCallback((url: string) => setActiveVideoUrl(url), [])}
+            onOpenVideoModal={openVideoModal}
             onOpenAudit={scrollToContact}
             heading={settings.portfolioHeading}
             settings={settings}
@@ -147,7 +160,7 @@ export default function App() {
         <Suspense fallback={<div className="h-32" />}>
           <Testimonials
             testimonials={testimonials}
-            onOpenVideoModal={useCallback((url: string) => setActiveVideoUrl(url), [])}
+            onOpenVideoModal={openVideoModal}
             heading={settings.testimonialsHeading}
           />
         </Suspense>
@@ -179,7 +192,7 @@ export default function App() {
         <Suspense fallback={<div className="h-32" />}>
           <Contact
             prefilledPackage={prefilledPackage}
-            onLeadSubmitted={useCallback(() => {}, [])}
+            onLeadSubmitted={noop}
           />
         </Suspense>
       </main>
@@ -193,7 +206,7 @@ export default function App() {
       <Suspense fallback={<div className="h-32" />}>
         <Footer
           settings={settings}
-          onOpenAdmin={useCallback(() => setIsAdminOpen(true), [])}
+          onOpenAdmin={openAdmin}
           onOpenAudit={scrollToContact}
         />
       </Suspense>
@@ -203,7 +216,7 @@ export default function App() {
         <ErrorBoundary label="Admin CMS" compact>
           <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">Loading...</div>}>
             <AdminDashboard
-              onClose={useCallback(() => setIsAdminOpen(false), [])}
+              onClose={closeAdmin}
               onRefreshSiteData={fetchSiteData}
             />
           </Suspense>
@@ -215,7 +228,7 @@ export default function App() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fadeIn">
           <div className="relative w-full max-w-4xl aspect-video rounded-3xl overflow-hidden glass-card border border-cyan-500/40 shadow-2xl">
             <button
-              onClick={() => setActiveVideoUrl(null)}
+              onClick={closeVideoModal}
               className="absolute top-4 right-4 z-10 p-2 rounded-xl bg-black/60 text-white hover:bg-black"
             >
               <X className="w-5 h-5" />
