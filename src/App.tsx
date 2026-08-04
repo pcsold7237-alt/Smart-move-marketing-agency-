@@ -7,6 +7,7 @@ import React, { useState, useEffect, Suspense, lazy, useCallback } from 'react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { ScrollProgressBar, CustomCursorGlow, CookieBanner } from './components/GlobalEnhancements';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { SiteSettings, ServiceItem, CaseStudy, Testimonial, TeamMember, PricingPackage, BlogPost, TrustedCompany, FAQItem } from './types';
 import { initialSiteSettings, initialServices, initialCaseStudies, initialTestimonials, initialTeam, initialPricing, initialBlogPosts, initialTrustedCompanies, initialFaqs } from './data/initialData';
 import { X } from 'lucide-react';
@@ -199,12 +200,14 @@ export default function App() {
 
       {/* Admin CMS Modal */}
       {isAdminOpen && (
-        <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">Loading...</div>}>
-          <AdminDashboard
-            onClose={useCallback(() => setIsAdminOpen(false), [])}
-            onRefreshSiteData={fetchSiteData}
-          />
-        </Suspense>
+        <ErrorBoundary label="Admin CMS" compact>
+          <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">Loading...</div>}>
+            <AdminDashboard
+              onClose={useCallback(() => setIsAdminOpen(false), [])}
+              onRefreshSiteData={fetchSiteData}
+            />
+          </Suspense>
+        </ErrorBoundary>
       )}
 
       {/* Global Video Modal */}
