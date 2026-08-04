@@ -269,14 +269,22 @@ async function upsertBlogInSupabase(post: BlogPost, sortOrder: number): Promise<
 }
 
 // --- GEMINI CLIENT ---
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-  httpOptions: {
-    headers: {
-      'User-Agent': 'aistudio-build',
+// Constructed defensively: if GEMINI_API_KEY is missing/invalid, the SDK constructor can throw,
+// which (unguarded) would crash this entire module on import — taking down EVERY /api/* route,
+// not just the chat one. Guarding this keeps the rest of the API alive even without the key.
+let ai: GoogleGenAI | null = null;
+try {
+  ai = new GoogleGenAI({
+    apiKey: process.env.GEMINI_API_KEY,
+    httpOptions: {
+      headers: {
+        'User-Agent': 'aistudio-build',
+      }
     }
-  }
-});
+  });
+} catch (err) {
+  console.warn('⚠️ Failed to initialize GoogleGenAI client (GEMINI_API_KEY missing/invalid) — AI chat will use fallback replies:', err);
+}
 
 // --- EMAIL SENDER HELPER ---
 async function sendLeadEmail(lead: Lead) {
@@ -1214,7 +1222,7 @@ app.post("/api/chat", async (req: Request, res: Response) => {
     db.analytics.aiChatUsage = (db.analytics.aiChatUsage || 0) + 1;
     saveDatabase();
 
-    if (!process.env.GEMINI_API_KEY) {
+    if (!process.env.GEMINI_API_KEY || !ai) {
       return res.json({
         text: `Thanks for asking! I'm AURA, Smart Move's AI Growth Strategist. I'd love to help you scale your ad accounts and landing pages. To get direct access to our specialist team and custom audit, click 'Book Audit' to schedule your free 1-on-1 audit!`
       });
