@@ -4,7 +4,6 @@ import path from "path";
 import fs from "fs";
 import crypto from "crypto";
 import { fileURLToPath } from "url";
-import { createServer as createViteServer } from "vite";
 import nodemailer from "nodemailer";
 import { GoogleGenAI } from "@google/genai";
 import { createClient } from "@supabase/supabase-js";
@@ -1334,6 +1333,10 @@ app.post("/api/admin/login", (req: Request, res: Response) => {
 // normal long-lived Node server exactly as before.
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
+    // Dynamically imported so this (and its Rollup native binding) is never touched
+    // on Vercel — startServer() itself only runs when !process.env.VERCEL (see below),
+    // but a top-level static import would still be evaluated at module load either way.
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
