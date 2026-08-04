@@ -1,0 +1,6 @@
+{
+  "name": "Smart Move Marketing Agency",
+  "description": "Full-service digital performance marketing agency platform with real-time analytics, case studies, audit booking, and built-in CMS Admin Dashboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
