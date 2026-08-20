@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Send, CheckCircle2, AlertCircle, Sparkles, Building2, Globe, Mail, User, DollarSign, Target, Loader2 } from 'lucide-react';
+import { Send, CheckCircle2, AlertCircle, Sparkles, Building2, Globe, Mail, User, DollarSign, Target, Loader2, Phone as PhoneIcon, MessageSquare } from 'lucide-react';
 
 interface ContactProps {
   prefilledPackage?: string;
@@ -16,11 +16,13 @@ export const Contact: React.FC<ContactProps> = ({ prefilledPackage, onLeadSubmit
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     business: '',
     website: '',
     budget: '$10k - $25k',
     selectedPackage: prefilledPackage || 'Growth Scale',
-    goals: ['Scale Paid Ads (Meta/TikTok)', 'Landing Page & Web Overhaul']
+    goals: ['Scale Paid Ads (Meta/TikTok)', 'Landing Page & Web Overhaul'],
+    message: ''
   });
 
   useEffect(() => {
@@ -64,8 +66,8 @@ export const Contact: React.FC<ContactProps> = ({ prefilledPackage, onLeadSubmit
   const handleNextStep = () => {
     setErrorMsg(null);
     if (step === 1) {
-      if (!formData.name.trim() || !formData.email.trim() || !formData.business.trim()) {
-        setErrorMsg('Please fill out your Name, Email, and Business Name.');
+      if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim() || !formData.business.trim()) {
+        setErrorMsg('Please fill out your Name, Email, Phone Number, and Business Name.');
         return;
       }
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -88,7 +90,7 @@ export const Contact: React.FC<ContactProps> = ({ prefilledPackage, onLeadSubmit
       const res = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({ ...formData, service: formData.selectedPackage })
       });
 
       const data = await res.json();
@@ -100,7 +102,7 @@ export const Contact: React.FC<ContactProps> = ({ prefilledPackage, onLeadSubmit
       
       // WhatsApp notification
       const cleanPhone = contactPhone.replace(/[^\d+]/g, '');
-      let waMessage = `New Lead Submission!\n\nName: ${formData.name}\nEmail: ${formData.email}\nPhone: ${formData.phone}\nBusiness: ${formData.business}\nBudget: ${formData.budget}\nSelected Service: ${formData.service}\n\nGoals: ${formData.goals.join(', ')}\nMessage: ${formData.message}`;
+      let waMessage = `New Lead Submission!\n\nName: ${formData.name}\nEmail: ${formData.email}\nPhone: ${formData.phone}\nBusiness: ${formData.business}\nBudget: ${formData.budget}\nSelected Package: ${formData.selectedPackage}\n\nGoals: ${formData.goals.join(', ')}\nMessage: ${formData.message || 'N/A'}`;
       const waUrl = `https://wa.me/${cleanPhone.startsWith('+') ? cleanPhone.substring(1) : cleanPhone}?text=${encodeURIComponent(waMessage)}`;
       
       window.open(waUrl, '_blank');
@@ -245,6 +247,23 @@ export const Contact: React.FC<ContactProps> = ({ prefilledPackage, onLeadSubmit
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
                       <label className="text-xs font-semibold text-gray-300 block mb-2">
+                        Phone Number (WhatsApp) *
+                      </label>
+                      <div className="relative">
+                        <PhoneIcon className="w-4 h-4 text-[#B7FF00] absolute left-3.5 top-3.5" />
+                        <input
+                          type="tel"
+                          required
+                          value={formData.phone}
+                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          placeholder="+92 300 1234567"
+                          className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:border-[#B7FF00] focus:ring-1 focus:ring-[#B7FF00] outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-semibold text-gray-300 block mb-2">
                         Company / Brand Name *
                       </label>
                       <div className="relative">
@@ -346,6 +365,22 @@ export const Contact: React.FC<ContactProps> = ({ prefilledPackage, onLeadSubmit
                       })}
                     </div>
                   </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-gray-300 block mb-2">
+                      Anything else we should know? (optional)
+                    </label>
+                    <div className="relative">
+                      <MessageSquare className="w-4 h-4 text-[#B7FF00] absolute left-3.5 top-3.5" />
+                      <textarea
+                        value={formData.message}
+                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                        placeholder="Tell us a bit more about your business or specific challenges..."
+                        rows={3}
+                        className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:border-[#B7FF00] focus:ring-1 focus:ring-[#B7FF00] outline-none resize-none"
+                      />
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -363,6 +398,10 @@ export const Contact: React.FC<ContactProps> = ({ prefilledPackage, onLeadSubmit
                       <div>
                         <span className="text-gray-400 block">Email:</span>
                         <span className="font-bold text-white">{formData.email}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-400 block">Phone:</span>
+                        <span className="font-bold text-white">{formData.phone}</span>
                       </div>
                       <div>
                         <span className="text-gray-400 block">Company:</span>
@@ -392,6 +431,13 @@ export const Contact: React.FC<ContactProps> = ({ prefilledPackage, onLeadSubmit
                         ))}
                       </div>
                     </div>
+
+                    {formData.message && (
+                      <div className="pt-3 border-t border-white/10 text-xs">
+                        <span className="text-gray-400 block mb-1">Additional Notes:</span>
+                        <span className="text-white/90">{formData.message}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
