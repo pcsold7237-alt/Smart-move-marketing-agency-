@@ -65,10 +65,11 @@ export const Testimonials: React.FC<TestimonialsProps> = ({ testimonials, headin
       case 'test-dr-aniqa':
         return '/7.jpeg';
       case 'test-nexus-ai':
-        // TODO: 2.jpeg is a byte-for-byte duplicate of 1.jpeg (Future Tour), not a
-        // real Nexus AI screenshot. There is no unique review image for Nexus AI
-        // in /public yet. Replace this once the real screenshot is provided.
-        return '/2.jpeg';
+        // Nexus AI never had a real client screenshot uploaded (2.jpeg was a
+        // duplicate of 1.jpeg / Future Tour). 8.jpeg is a generated placeholder
+        // card matching the site's Google-review style — swap for the real
+        // screenshot whenever the client sends one.
+        return '/8.jpeg';
       default:
         return '/1.jpeg';
     }
