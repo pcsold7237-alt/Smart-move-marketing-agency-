@@ -48,22 +48,27 @@ export const Testimonials: React.FC<TestimonialsProps> = ({ testimonials, headin
     : null;
 
   // Map each testimonial ID to its corresponding uploaded image
+  // NOTE: verified against actual image content on 2026-08-20 — the old mapping
+  // was shifted by one slot for every client after Future Tour.
   const getImagePath = (id: string): string => {
     switch (id) {
       case 'test-future-tour':
         return '/1.jpeg';
       case 'test-haga-bagel':
-        return '/2.jpeg';
-      case 'test-ecomascendx':
         return '/3.jpeg';
-      case 'test-easygo':
+      case 'test-ecomascendx':
         return '/4.jpeg';
-      case 'test-sikis-salon':
+      case 'test-easygo':
         return '/5.jpeg';
-      case 'test-dr-aniqa':
+      case 'test-sikis-salon':
         return '/6.jpeg';
-      case 'test-nexus-ai':
+      case 'test-dr-aniqa':
         return '/7.jpeg';
+      case 'test-nexus-ai':
+        // TODO: 2.jpeg is a byte-for-byte duplicate of 1.jpeg (Future Tour), not a
+        // real Nexus AI screenshot. There is no unique review image for Nexus AI
+        // in /public yet. Replace this once the real screenshot is provided.
+        return '/2.jpeg';
       default:
         return '/1.jpeg';
     }
